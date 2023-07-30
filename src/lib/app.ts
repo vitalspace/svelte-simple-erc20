@@ -4,9 +4,9 @@ import erc20ContractAbi from "../abi/erc20ContractAbi.json";
 import simpleContractAbi from "../abi/simpleContractAbi.json";
 class App {
   protected erc20ContractAddress: string =
-    "0xFC0dBfff94cBf21a1f56086345CfCeBe1b2d8de0";
+    "0x3603e76F53a9424B28C351D8439b7B7B2D00A3a2";
   protected simpleContractAddress: string =
-    "0x5a418d6A94FF92C6Cf670F1D4263F6dD833EC108";
+    "0x3bd77a05483760fF2F1b82D4c3f4458C3fa3fed1";
   protected erc20Contract: ethers.Contract | undefined;
   protected simpleContract: ethers.Contract | undefined;
   constructor() {
@@ -60,8 +60,6 @@ class App {
       erc20ContractAbi,
       await this.signer()
     );
-
-
 
     //     this.erc20Contract.approve(this.simpleContractAddress, "1000000000000000000")
     // // .send({ from: (await this.signer()).address })
@@ -119,10 +117,10 @@ class App {
       .changeMessage(message)
       .then(async (transaction) => {
         if (await transaction.wait()) {
-            this.currentMessage()
+          this.currentMessage();
         }
       })
-      .catch((err) => console.error(err));
+      .catch((err) => console.log(err));
   };
 }
 
