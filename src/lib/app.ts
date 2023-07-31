@@ -4,9 +4,9 @@ import erc20ContractAbi from "../abi/erc20ContractAbi.json";
 import simpleContractAbi from "../abi/simpleContractAbi.json";
 class App {
   protected erc20ContractAddress: string =
-    "0x3603e76F53a9424B28C351D8439b7B7B2D00A3a2";
+    "0x71C1F8acdB8105eAd0fcA8D05B8E77185eEd7bd6";
   protected simpleContractAddress: string =
-    "0x3bd77a05483760fF2F1b82D4c3f4458C3fa3fed1";
+    "0xdb28BBb69b7b106209E009D43C0b94bee173d897";
   protected erc20Contract: ethers.Contract | undefined;
   protected simpleContract: ethers.Contract | undefined;
   constructor() {

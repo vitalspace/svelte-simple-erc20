@@ -8,7 +8,7 @@
 <main class="flex justify-center items-center h-screen bg-black text-white">
   {#if !$isLoggedin}
   <section class="text-center border-2 w-full mx-4 sm:w-1/2 py-4 space-y-4 rounded-sm">
-    <h1 class="text-4xl">Simple App</h1>
+    <h1 class="text-4xl">Simple DApp</h1>
     <p>Hello please login with metamask</p>
     <button on:click={() => app.login()} class="bg-orange-400 w-full py-2 text-lg hover:bg-orange-500 transition-all">Login</button>
   </section> 
