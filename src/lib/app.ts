@@ -61,6 +61,10 @@ class App {
       await this.signer()
     );
 
+
+
+
+
     //     this.erc20Contract.approve(this.simpleContractAddress, "1000000000000000000")
     // // .send({ from: (await this.signer()).address })
     // .then((receipt) => {
@@ -101,6 +105,18 @@ class App {
       await this.signer()
     );
   }
+
+  async approveContract() {
+    this.erc20Contract.approve(this.simpleContractAddress, "")
+    .then((res) => {
+      console.log(res)
+    })
+    .catch((err) => {
+      console.log(err)
+    })
+  }
+
+
   async currentMessage() {
     this.simpleContract
       .message()
