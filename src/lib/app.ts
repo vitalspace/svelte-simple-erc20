@@ -1,14 +1,22 @@
 
 import { ethers } from "ethers";
-import { currentMessage, isApprove, isLoggedin, userId } from "../stores/stores";
+import { currentMessage, isApprove, isLoggedin, userId, addNotification, showNotification } from "../stores/stores";
 
 import erc20ContractAbi from "../abi/erc20ContractAbi.json";
 import simpleContractAbi from "../abi/simpleContractAbi.json";
+
+
+interface Notification {
+  message: string
+  type: string
+  removeAfther: number
+}
+
 class App {
   protected erc20ContractAddress: string =
-    "0x7e71Bf447c6254EF1FdEd75cAe7b839728e21db2";
+    "0x8EFE9F0f71650B3E77952e257B226ae822Bb6CB1";
   protected simpleContractAddress: string =
-    "0xC0abCE15dBEC9706F06cAF06874B33A0496010f5";
+    "0x54BC71d75D55947e524131F5D81e249E18E9074c";
   protected erc20Contract: ethers.Contract | undefined;
   protected simpleContract: ethers.Contract | undefined;
   constructor() {
@@ -73,19 +81,21 @@ class App {
   async approveContract() {
     this.erc20Contract.approve(this.simpleContractAddress, "2000000000000000000")
       .then((res) => {
-        // console.log(res)
         if (res) isApprove.update((e) => e = true);
+        this.createNotification({ 
+          message: "You have successfully approved the contract.", 
+          removeAfter: 4000, 
+          type: "success", 
+        });
       })
       .catch((err) => {
-
-        addNotification({
-          text: 'Notification',
-          position: 'bottom-center',
-        })
-        console.log(err)
+        this.createNotification({ 
+          message: "You have canceled the transaction.", 
+          removeAfter: 4000, 
+          type: "error", 
+        });
       })
   }
-
 
   async currentMessage() {
     this.simpleContract
@@ -107,10 +117,27 @@ class App {
         }
       })
       .catch((err) => {
-        alert("Insufficient balance.")
+        this.createNotification({ 
+          message: "Insufficient balance.", 
+          removeAfter: 4000, 
+          type: "error", 
+        });
         if (err) isApprove.update((e) => e = false);
       });
   };
+
+  createNotification(obj: Notification | any) {
+    obj.showNotification = true;
+    addNotification.set(obj);
+    setTimeout(() => {
+      addNotification.update(e => {
+        return {
+          ...e,
+          showNotification: false
+        }
+      })
+    }, obj.removeAfter);
+  }
 }
 
 export { App };
