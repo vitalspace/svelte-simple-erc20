@@ -1,12 +1,14 @@
+
 import { ethers } from "ethers";
-import { isLoggedin, userId, currentMessage } from "../stores/stores";
+import { currentMessage, isApprove, isLoggedin, userId } from "../stores/stores";
+
 import erc20ContractAbi from "../abi/erc20ContractAbi.json";
 import simpleContractAbi from "../abi/simpleContractAbi.json";
 class App {
   protected erc20ContractAddress: string =
-    "0x71C1F8acdB8105eAd0fcA8D05B8E77185eEd7bd6";
+    "0x7e71Bf447c6254EF1FdEd75cAe7b839728e21db2";
   protected simpleContractAddress: string =
-    "0xdb28BBb69b7b106209E009D43C0b94bee173d897";
+    "0xC0abCE15dBEC9706F06cAF06874B33A0496010f5";
   protected erc20Contract: ethers.Contract | undefined;
   protected simpleContract: ethers.Contract | undefined;
   constructor() {
@@ -61,44 +63,6 @@ class App {
       await this.signer()
     );
 
-
-
-
-
-    //     this.erc20Contract.approve(this.simpleContractAddress, "1000000000000000000")
-    // // .send({ from: (await this.signer()).address })
-    // .then((receipt) => {
-    //   // La transacción se realizó correctamente y el contrato ahora tiene permiso para gastar la cantidad especificada en tu nombre
-    //   console.log('Transacción completada:', receipt);
-    // })
-    // .catch((error) => {
-    //   // Manejar errores
-    //   console.error('Error al realizar la transacción:', error);
-    // });
-
-    // this.simpleContract.changeMessage("la concha tu madre").then((res) => {
-    //   console.log(res);
-    // })
-    // .catch((err) => {
-    //     console.error(err)
-    // })
-
-    // const allowanceAmount = ethers.parseUnits('1', 'ether');
-
-    // this.erc20Contract.approve((await this.signer()).address, 1)
-    // .then((transaction) => {
-    //   // La transacción ha sido enviada, ahora esperar a que se confirme
-    //   return transaction.wait();
-    // })
-    // .then((receipt) => {
-    //   // La transacción se ha confirmado y el contrato ahora tiene permiso para gastar la cantidad especificada en tu nombre
-    //   console.log('Transacción completada:', receipt);
-    // })
-    // .catch((error) => {
-    //   // Manejar errores
-    //   console.error('Error al realizar la transacción:', error);
-    // });
-
     this.simpleContract = new ethers.Contract(
       this.simpleContractAddress,
       simpleContractAbi,
@@ -107,13 +71,19 @@ class App {
   }
 
   async approveContract() {
-    this.erc20Contract.approve(this.simpleContractAddress, "")
-    .then((res) => {
-      console.log(res)
-    })
-    .catch((err) => {
-      console.log(err)
-    })
+    this.erc20Contract.approve(this.simpleContractAddress, "2000000000000000000")
+      .then((res) => {
+        // console.log(res)
+        if (res) isApprove.update((e) => e = true);
+      })
+      .catch((err) => {
+
+        addNotification({
+          text: 'Notification',
+          position: 'bottom-center',
+        })
+        console.log(err)
+      })
   }
 
 
@@ -136,8 +106,12 @@ class App {
           this.currentMessage();
         }
       })
-      .catch((err) => console.log(err));
+      .catch((err) => {
+        alert("Insufficient balance.")
+        if (err) isApprove.update((e) => e = false);
+      });
   };
 }
 
 export { App };
+
