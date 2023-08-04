@@ -1,22 +1,28 @@
-
 import { ethers } from "ethers";
-import { currentMessage, isApprove, isLoggedin, userId, addNotification, showNotification } from "../stores/stores";
-
+import {
+  addNotification,
+  currentMessage,
+  isApprove,
+  isLoggedin,
+  userId,
+  userBalance,
+  tokenSymbol,
+} from "../stores/stores";
 import erc20ContractAbi from "../abi/erc20ContractAbi.json";
 import simpleContractAbi from "../abi/simpleContractAbi.json";
-
+import {
+  ERC_20_CONTRACT_ADDRESS,
+  SIMPLE_CONTACT_ADDRESS,
+} from "../costanst/contants";
 
 interface Notification {
-  message: string
-  type: string
-  removeAfther: number
+  message: string;
+  type: string;
+  removeAfther: number;
 }
-
 class App {
-  protected erc20ContractAddress: string =
-    "0x8EFE9F0f71650B3E77952e257B226ae822Bb6CB1";
-  protected simpleContractAddress: string =
-    "0x54BC71d75D55947e524131F5D81e249E18E9074c";
+  protected erc20ContractAddress: string = ERC_20_CONTRACT_ADDRESS;
+  protected simpleContractAddress: string = SIMPLE_CONTACT_ADDRESS;
   protected erc20Contract: ethers.Contract | undefined;
   protected simpleContract: ethers.Contract | undefined;
   constructor() {
@@ -42,6 +48,8 @@ class App {
       isLoggedin.update((e) => (e = true));
       await this.loadContracts();
       await this.currentMessage();
+      await this.getUserBalance();
+      await this.getTokenSymbol();
     }
   }
 
@@ -54,6 +62,8 @@ class App {
         userId.update((e) => (e = res.address));
         await this.loadContracts();
         await this.currentMessage();
+        await this.getUserBalance();
+        await this.getTokenSymbol();
       })
       .catch((err) => {
         alert("You have canceled the login");
@@ -79,22 +89,47 @@ class App {
   }
 
   async approveContract() {
-    this.erc20Contract.approve(this.simpleContractAddress, "2000000000000000000")
+    this.erc20Contract
+      .approve(this.simpleContractAddress, "2000000000000000000")
       .then((res) => {
-        if (res) isApprove.update((e) => e = true);
-        this.createNotification({ 
-          message: "You have successfully approved the contract.", 
-          removeAfter: 4000, 
-          type: "success", 
+        if (res) isApprove.update((e) => (e = true));
+        this.createNotification({
+          message: "You have successfully approved the contract.",
+          removeAfter: 4000,
+          type: "success",
         });
       })
       .catch((err) => {
-        this.createNotification({ 
-          message: "You have canceled the transaction.", 
-          removeAfter: 4000, 
-          type: "error", 
+        this.createNotification({
+          message: "You have canceled the transaction.",
+          removeAfter: 4000,
+          type: "error",
         });
+      });
+  }
+
+  async getUserBalance() {
+    this.erc20Contract
+      .balanceOf((await this.signer()).address)
+      .then((res) => {
+        userBalance.set(
+          parseInt(res).toLocaleString().replaceAll(",", "").slice(0, 6)
+        );
       })
+      .catch((err) => {
+        console.log(err);
+      });
+  }
+
+  async getTokenSymbol() {
+    this.erc20Contract
+      .symbol()
+      .then((res) => {
+        tokenSymbol.set(res);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   }
 
   async currentMessage() {
@@ -109,36 +144,53 @@ class App {
   }
 
   changeMessage = async (message: string) => {
-    this.simpleContract
-      .changeMessage(message)
-      .then(async (transaction) => {
-        if (await transaction.wait()) {
-          this.currentMessage();
-        }
-      })
-      .catch((err) => {
-        this.createNotification({ 
-          message: "Insufficient balance.", 
-          removeAfter: 4000, 
-          type: "error", 
+    if (message !== undefined) {
+      this.simpleContract
+        .changeMessage(message)
+        .then(async (transaction) => {
+          if (await transaction.wait()) {
+            await this.currentMessage();
+            await this.getUserBalance();
+          }
+        })
+        .catch((err) => {
+          if (err.code === "ACTION_REJECTED") {
+            this.createNotification({
+              message: "You have canceled the transaction.",
+              removeAfter: 4000,
+              type: "error",
+            });
+          }
+          if (err.code === "CALL_EXCEPTION") {
+            this.createNotification({
+              message: "Insufficient balance.",
+              removeAfter: 4000,
+              type: "error",
+            });
+          }
+          if (err) isApprove.update((e) => (e = false));
         });
-        if (err) isApprove.update((e) => e = false);
+    } else {
+      this.createNotification({
+        message: "the message must contain at least one word.",
+        removeAfter: 4000,
+        type: "error",
       });
+    }
   };
 
   createNotification(obj: Notification | any) {
     obj.showNotification = true;
     addNotification.set(obj);
     setTimeout(() => {
-      addNotification.update(e => {
+      addNotification.update((e) => {
         return {
           ...e,
-          showNotification: false
-        }
-      })
+          showNotification: false,
+        };
+      });
     }, obj.removeAfter);
   }
 }
 
 export { App };
-
